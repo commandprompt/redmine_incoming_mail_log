@@ -31,7 +31,7 @@ class IncomingMailsController < ApplicationController
     @mail_count = @mails.count
     @mail_pages = Paginator.new(self, @mail_count, @limit, params[:page])
     @offset ||= @mail_pages.current.offset
-    @mails = @mails.all(:offset => @offset, :limit => @limit)
+    @mails = @mails.all.offset(@offset).limit(@limit)
   end
 
   def show

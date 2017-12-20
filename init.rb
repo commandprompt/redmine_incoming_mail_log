@@ -11,7 +11,7 @@ Redmine::Plugin.register :redmine_incoming_mail_log do
   menu :admin_menu, :incoming_mails,
     { :controller => 'incoming_mails', :action => 'index' },
     :caption => :label_incoming_mail_plural,
-    :html => { :class => 'incoming_mails' }
+    :html => { :class => 'icon icon-email' }
 
   settings :default => {},
     :partial => 'settings/redmine_incoming_mail_log_settings'
@@ -28,4 +28,4 @@ else
   prepare_block.call
 end
 
-require_dependency 'redmine_incoming_mail_log/view_hooks'
+# require_dependency 'redmine_incoming_mail_log/view_hooks'

@@ -1,12 +1,12 @@
 class IncomingMail < ActiveRecord::Base
   unloadable
 
-  scope :for_project, lambda { |project| where(:target_project => project) }
-  scope :sender_like, lambda { |sender| where(["sender_email ILIKE ?", "%#{sender}%"]) }
-  scope :subject_like, lambda { |subject| where(["subject ILIKE ?", "%#{subject}%"]) }
-  scope :unhandled, where(:handled => false)
-  scope :received_on, lambda { |date| where(["created_on::date = ?", date]) }
-  default_scope order("created_on DESC")
+  scope :for_project, -> (project) { where(:target_project => project) }
+  scope :sender_like, -> (sender) { where(["sender_email ILIKE ?", "%#{sender}%"]) }
+  scope :subject_like, -> (subject) { where(["subject ILIKE ?", "%#{subject}%"]) }
+  scope :unhandled, -> { where(:handled => false) }
+  scope :received_on, -> (date) { where(["created_on::date = ?", date]) }
+  default_scope { order("created_on DESC") }
 
   def self.report!
     settings = Setting['plugin_redmine_incoming_mail_log']
