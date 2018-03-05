@@ -71,8 +71,8 @@ module RedmineIncomingMailLog
             Proc.new{|level, *args| (@log_messages ||= "") << "#{level.upcase}: #{args.join(' ')}\n"})
       end
 
-      def receive_with_incoming_mail_log(email)
-        receive_without_incoming_mail_log(email).tap do |received|
+      def receive_with_incoming_mail_log(email, options)
+        receive_without_incoming_mail_log(email, options).tap do |received|
           if incoming_mail
             project = get_keyword(:project)
             if project.blank? && received && received.respond_to?(:project)
@@ -80,6 +80,7 @@ module RedmineIncomingMailLog
             end
 
             begin
+              sender_email = email.from.to_a.first.to_s.strip
               incoming_mail.update_attributes!(:sender_email => clean_string(sender_email),
                                                :subject => clean_string(email.subject),
                                                :target_project => clean_string(project),
