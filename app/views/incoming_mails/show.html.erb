@@ -10,5 +10,5 @@
 </div>
 
 <% other_formats_links do |f| %>
-  <%= f.link_to 'Text', :url => params %>
+  <%= f.link_to 'Text', :url => params.to_unsafe_h %>
 <% end %>

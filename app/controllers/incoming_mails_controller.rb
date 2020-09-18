@@ -2,8 +2,8 @@ class IncomingMailsController < ApplicationController
   unloadable
 
   layout 'admin'
-  before_filter :require_admin
-  before_filter :find_incoming_mail, :only => [:show, :destroy]
+  before_action :require_admin
+  before_action :find_incoming_mail, :only => [:show, :destroy]
 
   def index
     @mails = IncomingMail

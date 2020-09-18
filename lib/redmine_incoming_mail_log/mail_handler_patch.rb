@@ -11,15 +11,15 @@ module RedmineIncomingMailLog
       def self.extended(base)
         base.class_eval do
           class << self
-            alias_method_chain :receive, :incoming_mail_log
+            alias_method :receive_without_incoming_mail_log, :receive
+            alias_method :receive, :receive_with_incoming_mail_log
           end
         end
       end
-      
+
       def receive_with_incoming_mail_log(email, options)
         begin
-          self.send(:class_variable_set, :@@incoming_mail,
-                    IncomingMail.create!(:content => utf8_clean(email.dup)))
+          self.send(:class_variable_set, :@@incoming_mail,IncomingMail.create!(:content => utf8_clean(email.dup)))
         rescue => e
           logger.error "MailHandler: failed to log incoming mail: #{e.inspect}" if logger
         end
@@ -42,8 +42,12 @@ module RedmineIncomingMailLog
     module InstanceMethods
       def self.included(base)
         base.class_eval do
-          alias_method_chain :logger, :incoming_mail_log
-          alias_method_chain :receive, :incoming_mail_log
+          alias_method :logger_without_incoming_mail_log, :logger
+          alias_method :logger, :logger_with_incoming_mail_log
+
+          alias_method :receive_without_incoming_mail_log, :receive
+          alias_method :receive, :receive_with_incoming_mail_log
+
           (%w(issue) +
            %w(issue journal message).map{|m| "#{m}_reply"}).each do |model|
             base.class_eval <<-EOF
@@ -60,7 +64,9 @@ module RedmineIncomingMailLog
                 raise e
               end
             EOF
-            alias_method_chain "receive_#{model}".to_sym, :incoming_mail_log
+
+            alias_method "receive_#{model}_without_incoming_mail_log".to_sym, :receive
+            alias_method :receive, "receive_#{model}_with_incoming_mail_log".to_sym
           end
         end
       end
@@ -85,7 +91,8 @@ module RedmineIncomingMailLog
                                                :subject => clean_string(email.subject),
                                                :target_project => clean_string(project),
                                                :handled => !!received,
-                                               :log_messages => clean_string(@log_messages))
+                                               :log_messages => clean_string(@log_messages)
+                                               )
             rescue => e
               logger.error "MailHandler: failed to update incoming mail log: #{e.inspect}" if logger
             end
