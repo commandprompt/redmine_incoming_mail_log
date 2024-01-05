@@ -87,7 +87,7 @@ module RedmineIncomingMailLog
 
             begin
               sender_email = email.from.to_a.first.to_s.strip
-              incoming_mail.update_attributes!(:sender_email => clean_string(sender_email),
+              incoming_mail.update_columns(:sender_email => clean_string(sender_email),
                                                :subject => clean_string(email.subject),
                                                :target_project => clean_string(project),
                                                :handled => !!received,
