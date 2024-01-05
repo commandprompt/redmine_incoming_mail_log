@@ -4,9 +4,9 @@ Redmine::Plugin.register :redmine_incoming_mail_log do
   name 'Redmine Incoming Mail Log plugin'
   author 'Alex Shulgin <ash@commandprompt.com>'
   description 'A plugin to record incoming mails and statuses of handling them.'
-  version '0.2.1'
+  version '0.3.0'
   url 'http://github.com/commandprompt/redmine_incoming_mail_log'
-
+  requires_redmine :version_or_higher => '5.0'
   menu :admin_menu, :incoming_mails,
     { :controller => 'incoming_mails', :action => 'index' },
     :caption => :label_incoming_mail_plural,
@@ -16,15 +16,8 @@ Redmine::Plugin.register :redmine_incoming_mail_log do
     :partial => 'settings/redmine_incoming_mail_log_settings'
 end
 
-prepare_block = Proc.new do
-  MailHandler.send(:include, RedmineIncomingMailLog::MailHandlerPatch)
-  Mailer.send(:include, RedmineIncomingMailLog::MailerPatch)
-end
+MailHandler.send(:include, RedmineIncomingMailLog::MailHandlerPatch)
+Mailer.send(:include, RedmineIncomingMailLog::MailerPatch)
 
-if Rails.env.development?
-  ((Rails.version > "5")? ActiveSupport::Reloader : ActionDispatch::Callbacks).to_prepare { prepare_block.call }
-else
-  prepare_block.call
-end
 
 # require_dependency 'redmine_incoming_mail_log/view_hooks'
