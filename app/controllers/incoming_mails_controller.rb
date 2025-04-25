@@ -37,7 +37,7 @@ class IncomingMailsController < ApplicationController
   def show
     respond_to do |format|
       format.html
-      format.text { render :text => @mail.content }
+      format.text { render :plain => @mail.content }
     end
   end
 

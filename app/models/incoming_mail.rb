@@ -9,8 +9,15 @@ class IncomingMail < ActiveRecord::Base
   default_scope { order("created_on DESC") }
 
   def self.report!
+    console = Logger.new(STDOUT)
     settings = Setting['plugin_redmine_incoming_mail_log']
-    Mailer.unhandled_mail_report(reorder("target_project, created_on DESC"), settings['notify_email']).deliver
+    should_notify = ActiveModel::Type::Boolean.new.cast(settings[:notify_failed])
+    console.warn("Incoming Mail Log -> notify failed setting is disabled, skipping report") unless should_notify
+    return unless should_notify
+
+    recipient = EmailAddress.find_by(address: settings[:notify_email]).try(:user)
+    Mailer.deliver_unhandled_mail_report(recipient, reorder("target_project, created_on DESC")) and return if recipient
+    console.warn("Incoming Mail Log -> report recipient notification email address not found, skipping report")
   end
 
   def project

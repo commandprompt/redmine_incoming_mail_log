@@ -1,22 +1,37 @@
 module RedmineIncomingMailLog
   module MailerPatch
     def self.included(base)
+      base.extend ClassMethods
       base.class_eval do
         helper IncomingMailsHelper
+        helper ActionView::Helpers::UrlHelper
+        include InstanceMethods
       end
     end
 
-    def failed_incoming_mail(incoming_mail, notify_addresses)
-      @mail = incoming_mail
-      @url = incoming_mail_url(incoming_mail)
-      mail :to => notify_addresses,
-        :subject => l(:mail_subject_failed_incoming_mail)
+    module ClassMethods
+      def deliver_failed_incoming_mail(recipient, incoming_mail)
+        failed_incoming_mail(recipient, incoming_mail).deliver_now
+      end
+
+      def deliver_unhandled_mail_report(recipient, mails)
+        unhandled_mail_report(recipient, mails).deliver_now
+      end
     end
 
-    def unhandled_mail_report(mails, notify_addresses)
-      @mails = mails
-      mail :to => notify_addresses,
-        :subject => l(:mail_subject_unhandled_mail_report)
+    module InstanceMethods
+      def unhandled_mail_report(recipient, mails)
+        @mails = mails
+        mail :to => recipient,
+          :subject => l(:mail_subject_unhandled_mail_report)
+      end
+
+      def failed_incoming_mail(recipient, incoming_mail)
+        @mail = incoming_mail
+        @url = url_for({:action => 'show', :controller => 'incoming_mails', :id => incoming_mail.id})
+        mail :to => recipient,
+          :subject => l(:mail_subject_failed_incoming_mail)
+      end
     end
   end
 end

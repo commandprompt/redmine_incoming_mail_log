@@ -100,7 +100,9 @@ module RedmineIncomingMailLog
             if !received && logger.seen_error?
               settings = Setting['plugin_redmine_incoming_mail_log']
               if settings && settings['notify_failed'] == '1'
-                Mailer.failed_incoming_mail(incoming_mail, settings['notify_email']).deliver
+                recipient = EmailAddress.find_by(address: settings[:notify_email]).try(:user)
+                Mailer.deliver_failed_incoming_mail(recipient, incoming_mail) and return if recipient
+                logger.warn("Incoming Mail Log -> notify_failed recipient email address not found, can't report error!")
               end
             end
           end
